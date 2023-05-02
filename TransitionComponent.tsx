@@ -12,39 +12,7 @@ function TransitionComponent({ children, inProp }: ITransitionComponent) {
 	let [status, setStatus] = useState<TransitionStatus>();
 
 	useEffect(() => {
-		const ele = nodeRef?.current;
-
-		if (ele) {
-			status === "entering" &&
-				animejs({
-					targets: ele,
-					translateY: {
-						value: ["200%", "0%"],
-						duration: 250,
-						easing: "easeOutElastic(1, .6)",
-					},
-					opacity: {
-						value: [0, 1],
-						duration: 50,
-						easing: "easeInOutCubic",
-					},
-				});
-
-			status === "exiting" &&
-				animejs({
-					targets: ele,
-					translateY: {
-						value: ["0%", "200%"],
-						duration: 20,
-						easing: "easeOutElastic(1, .6)",
-					},
-					opacity: {
-						value: [1, 0],
-						duration: 50,
-						easing: "easeInOutCubic",
-					},
-				});
-		}
+<!-- 		const ele = nodeRef?.current; -->
 	}, [status, nodeRef]);
 
 	return (
@@ -54,12 +22,42 @@ function TransitionComponent({ children, inProp }: ITransitionComponent) {
 			timeout={500}
 			appear={true}
 			exit={true}
+			onEntering={() => requestAnimationFrame(() => animejs({
+				targets: nodeRef.current? nodeRef.current: null,
+				translateY: {
+					value: ["200%", "0%"],
+					duration: 250,
+					easing: "easeOutElastic(1, .6)"
+				},
+				opacity: {
+					value: [0, 1],
+					duration: 50,
+					easing: "easeInOutCubic"
+				},
+					// delay: 1000
+				})
+			)}
+			onEntered={() => setStatus("entered")}
+			onExiting={() => requestAnimationFrame(() => animejs({
+				targets: nodeRef.current,
+				translateY: {
+					value: ["0%", "200%"],
+					duration: 20,
+					easing: "easeOutElastic(1, .6)"
+				},
+				opacity: {
+					value: [1, 0],
+					duration: 50,
+					easing: "easeInOutCubic"
+				},
+				})
+			)}
+			onExited={() => setStatus("exited")}
 			mountOnEnter
 			unmountOnExit
 		>
 			{(state) => {
-				setStatus(state);
-				return children(nodeRef);
+				return children(nodeRef, state);
 			}}
 		</Transition>
 	);
